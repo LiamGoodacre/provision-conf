@@ -21,69 +21,28 @@ confirm_modify() {
   if [[ "$response" == "y" ]]; then echo y; else echo n; fi
 }
 
-if [[ "$(confirm_modify "$HOME/.bash_aliases")" == "y" ]]; then
-  >/dev/null tee "$HOME"/.bash_aliases <<"EOF"
-export EDITOR=nvim
-export VISUAL=nvim
-export MY_CONFIG_DIR="$HOME"/.config/
-
-modal() {
-  local dir=$1; shift
-  local mode=$1; shift
-  (cd "$dir" && MY_MODE="$mode" exec bash -il)
-}
-
-configs() {
-  : | find "$MY_CONFIG_DIR" -name .git \
-    | xargs dirname \
-    | xargs -n1 basename
-}
-
-config() {
-  local which_config
-  which_config=$( configs | fzf --reverse )
-  modal "${MY_CONFIG_DIR}${which_config}" "$which_config"
-}
+install_config() {
+  local needle=$1; shift
+  local path=$1; shift
+  local target=$1; shift
+  if ! grep -q -F "# $needle" "$path"; then
+    if [[ "$(confirm_modify "$path")" == "y" ]]; then
+      tee --append "$path" <<EOF
+if [ -f "$target" ]; then . "$target"; fi # $needle
 EOF
-fi
-
-if [[ "$(confirm_modify "$HOME/.bashrc")" == "y" ]]; then
-  >/dev/null tee --append "$HOME"/.bashrc <<"EOF"
-function __ps1() {
-  local blank red yellow green blue violet
-
-  if [ -n "${1}" ]; then
-    blank='\[\033[00m\]'
-    red='\[\033[01;31m\]'
-    yellow='\[\033[01;33m\]'
-    green='\[\033[01;32m\]'
-    blue='\[\033[01;34m\]'
-    violet='\[\033[01;35m\]'
+    fi
   fi
-
-  local set_title='\033]0;$(pwd) | $(hostname -f)\007'
-  local cursor_reset='\r$(tput cnorm)'
-
-  local location='\n'"$violet"'Σ \u@\h: '"$yellow"'\w'"$blank"
-  local gitformat='\n'"$violet"'Δ '"$green"'%s'"$blank"
-  local mode="${MY_MODE:+\n"$violet"Π mode: "$red""${MY_MODE}""$blank"}"
-  local prompt='\n'"$violet"'∀'"$blank"' '
-
-  local gitbit=''
-  if &>/dev/null type __git_ps1; then
-    gitbit='$(__git_ps1 '"'${gitformat}'"')'
-  fi
-
-  echo "${set_title}${cursor_reset}${location}${gitbit}${mode}${prompt}"
 }
 
-export GIT_PS1_SHOWDIRTYSTATE=1
-export GIT_PS1_SHOWUNTRACKEDFILES=1
-export GIT_PS1_SHOWUPSTREAM=auto
-PS1='${debian_chroot:+($debian_chroot)}'"$(__ps1 "${color_prompt}")"
-unset color_prompt force_color_prompt
-EOF
-fi
+install_config \
+  'provision-conf/.bashrc' \
+  "$HOME"/.bashrc \
+  "$HOME"/.config/provision-conf/.bashrc
+
+install_config \
+  'provision-conf/.bash_aliases' \
+  "$HOME"/.bash_aliases \
+  "$HOME"/.config/provision-conf/.bash_aliases
 
 sudo apt update
 sudo apt upgrade
