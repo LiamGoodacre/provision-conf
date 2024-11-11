@@ -121,22 +121,17 @@ if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 fi
 
-if [[ "$(confirm_with 'Install tailscale?')" == "y" ]]; then
+if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
-  if ! grep -q 'tailscale completion bash' "$HOME"/.bashrc; then
-    tee --append "$HOME"/.bashrc <<"EOF"
-eval "$(tailscale completion bash)"
-EOF
-  fi
 fi
 
-if >/dev/null which nix; then
+if which nix &>/dev/null; then
   >&2 echo "Nix already installed"
-else
+elif [[ "$(confirm_with 'Install Nix?')" == "y" ]]; then
   sh <(curl -L https://nixos.org/nix/install) --daemon
 fi
 
-if [[ "$(confirm 'Install OBS Studio?')" == "y" ]]; then
+if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
   sudo add-apt-repository ppa:obsproject/obs-studio
   sudo apt install obs-studio
 fi

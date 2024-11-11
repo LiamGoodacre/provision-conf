@@ -36,3 +36,6 @@ PS1='${debian_chroot:+($debian_chroot)}'"$(__ps1 color)"
 
 ### }}} MY_PS1
 
+if which tailscale &>/dev/null; then
+  eval "$(tailscale completion bash)"
+fi
