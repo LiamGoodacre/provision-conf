@@ -3,6 +3,12 @@
 set -euo pipefail
 shopt -s inherit_errexit
 
+confirm_with() {
+  local response=n
+  read -p "$1 [y/N] " response
+  if [[ "$response" == "y" ]]; then echo y; else echo n; fi
+}
+
 confirm_modify() {
   local path=$1; shift
   local response=y
@@ -12,15 +18,11 @@ confirm_modify() {
     read -p "Modify $path? [y/N] " response
   fi
 
-  if [[ "$response" == "y" ]]; then
-    echo y
-  else
-    echo n
-  fi
+  if [[ "$response" == "y" ]]; then echo y; else echo n; fi
 }
 
 if [[ "$(confirm_modify "$HOME/.bash_aliases")" == "y" ]]; then
-  tee "$HOME"/.bash_aliases <<"EOF"
+  >/dev/null tee "$HOME"/.bash_aliases <<"EOF"
 export EDITOR=nvim
 export VISUAL=nvim
 export MY_CONFIG_DIR="$HOME"/.config/
@@ -46,7 +48,7 @@ EOF
 fi
 
 if [[ "$(confirm_modify "$HOME/.bashrc")" == "y" ]]; then
-  tee --append "$HOME"/.bashrc <<"EOF"
+  >/dev/null tee --append "$HOME"/.bashrc <<"EOF"
 function __ps1() {
   local blank red yellow green blue violet
 
@@ -118,16 +120,18 @@ fi
 # Possibly add new ssh key to GitHub
 
 # Install Hack Nerd Font
-(
-  tmpdir=$(mktemp -d)
-  trap 'rm -rf "$tmpdir"' EXIT
-  curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip -o "$tmpdir"/Hack.zip
-  cd "$tmpdir"
-  unzip Hack.zip
-  find ~/.local/share/fonts/ -name 'HackNerdFont*.ttf' -exec rm {} \;
-  cp -r ./*.ttf ~/.local/share/fonts/
-  fc-cache -fv
-)
+if [[ "$(confirm_with 'Install Hack Nerd Font?')" == "y" ]]; then
+  (
+    tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
+    curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip -o "$tmpdir"/Hack.zip
+    cd "$tmpdir"
+    unzip Hack.zip
+    find ~/.local/share/fonts/ -name 'HackNerdFont*.ttf' -exec rm {} \;
+    cp -r ./*.ttf ~/.local/share/fonts/
+    fc-cache -fv
+  )
+fi
 
 test -d "$HOME"/.config/tokyonight-theme || git clone https://github.com/folke/tokyonight.nvim.git "$HOME"/.config/tokyonight-theme
 test -d "$HOME"/.config/alacritty-conf || git clone git@github.com:LiamGoodacre/alacritty-conf.git "$HOME"/.config/alacritty-conf
@@ -142,7 +146,7 @@ ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
 # Needed for neovim Mason to install bzl & PureScript lsps
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 (
-  NVM_DIR="$HOME/.config/nvm"
+  export NVM_DIR="$HOME/.config/nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
   nvm install node
   nvm use node
@@ -154,13 +158,17 @@ sudo mv nvim.appimage /usr/bin/nvim
 sudo chmod +x /usr/bin/nvim
 test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
 
-curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
+  curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+fi
 
-curl -fsSL https://tailscale.com/install.sh | sh
-if ! grep -q 'tailscale completion bash' "$HOME"/.bashrc; then
-  tee --append "$HOME"/.bashrc <<"EOF"
+if [[ "$(confirm_with 'Install tailscale?')" == "y" ]]; then
+  curl -fsSL https://tailscale.com/install.sh | sh
+  if ! grep -q 'tailscale completion bash' "$HOME"/.bashrc; then
+    tee --append "$HOME"/.bashrc <<"EOF"
 eval "$(tailscale completion bash)"
 EOF
+  fi
 fi
 
 if >/dev/null which nix; then
@@ -169,8 +177,10 @@ else
   sh <(curl -L https://nixos.org/nix/install) --daemon
 fi
 
-# sudo add-apt-repository ppa:obsproject/obs-studio
-# sudo apt install obs-studio
+if [[ "$(confirm 'Install OBS Studio?')" == "y" ]]; then
+  sudo add-apt-repository ppa:obsproject/obs-studio
+  sudo apt install obs-studio
+fi
 
 # for ghc dev
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
