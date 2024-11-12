@@ -31,10 +31,27 @@ function __ps1() {
   echo "${set_title}${cursor_reset}${timestamp}${location}${mode}${gitbit}${prompt}"
 }
 
+function __ps2() {
+  local blank red yellow green blue violet
+
+  if [ -n "${1}" ]; then
+    blank='\[\033[00m\]'
+    red='\[\033[01;31m\]'
+    yellow='\[\033[01;33m\]'
+    green='\[\033[01;32m\]'
+    blue='\[\033[01;34m\]'
+    violet='\[\033[01;35m\]'
+  fi
+
+  local prompt="$violet"'σ'"$blank"' '
+  echo "${prompt}"
+}
+
 export GIT_PS1_SHOWDIRTYSTATE=1
 export GIT_PS1_SHOWUNTRACKEDFILES=1
 export GIT_PS1_SHOWUPSTREAM=auto
 PS1='${debian_chroot:+($debian_chroot)}'"$(__ps1 color)"
+PS2="$(__ps2 color)"
 
 ### }}} MY_PS1
 
