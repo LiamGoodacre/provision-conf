@@ -57,7 +57,7 @@ if [[ "$LANG" != "en_GB.UTF-8" ]]; then
 fi
 
 sudo snap install alacritty 1password htop gimp
-sudo apt install build-essential zlib1g-dev git curl xsel xclip ripgrep tmux gnome-tweaks fzf
+sudo apt install build-essential zlib1g-dev git curl xsel xclip ripgrep tmux gnome-tweaks fzf tree vlc
 
 gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
 
@@ -119,6 +119,9 @@ sudo rm /usr/bin/nvim
 sudo mv nvim.appimage /usr/bin/nvim
 sudo chmod +x /usr/bin/nvim
 test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
+for e in editor ex vi view pico; do
+  sudo update-alternatives --install `which $e` $e `which nvim` 50
+done
 
 if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
