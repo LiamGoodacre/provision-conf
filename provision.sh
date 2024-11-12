@@ -44,6 +44,9 @@ install_config \
   "$HOME"/.bash_aliases \
   "$HOME"/.config/provision-conf/.bash_aliases
 
+mkdir -p "$HOME"/.config/home-manager
+ln -s "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
+
 sudo apt update
 sudo apt upgrade
 
@@ -129,6 +132,10 @@ if which nix &>/dev/null; then
   >&2 echo "Nix already installed"
 elif [[ "$(confirm_with 'Install Nix?')" == "y" ]]; then
   sh <(curl -L https://nixos.org/nix/install) --daemon
+  nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+  nix-channel --update
+  nix-shell '<home-manager>' -A install
+  home-manager build && home-manager switch
 fi
 
 if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then

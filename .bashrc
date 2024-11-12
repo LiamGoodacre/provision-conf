@@ -1,4 +1,3 @@
-
 ### MY_PS1 {{{
 
 function __ps1() {
