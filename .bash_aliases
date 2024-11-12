@@ -9,7 +9,8 @@ modal() {
   (
     cd "$dir"
     $cmd "$@"
-    MY_MODE="$mode" exec bash -il)
+    MY_MODE="$mode" exec bash -il
+  )
 }
 
 configs() {
@@ -18,9 +19,13 @@ configs() {
     | xargs -n1 basename
 }
 
+config-pick() {
+  configs | gum choose --header "Choose a config"
+}
+
 config() {
   local which_config
-  which_config=$( configs | fzf --reverse )
+  which_config=$(config-pick)
   if [ -z "$which_config" ]; then return 1; fi
   modal \
     "${MY_CONFIG_DIR}${which_config}" \
@@ -30,7 +35,7 @@ config() {
 
 config-up() {
   local which_config
-  which_config=$( configs | fzf --reverse )
+  which_config=$(config-pick)
   if [ -z "$which_config" ]; then return 1; fi
   modal \
     "${MY_CONFIG_DIR}${which_config}" \
