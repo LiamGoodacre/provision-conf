@@ -150,3 +150,8 @@ fi
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
 # cabal v2-install happy-2.0.2
 # cabal v2-install alex
+
+# ### Fingerprint reader & auth
+# sudo apt install libpam-fprintd fprintd
+# fprintd-enroll # to enroll fingerprint
+# sudo pam-auth-update # Then select "Fingerprint authentication"
