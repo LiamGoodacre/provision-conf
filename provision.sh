@@ -71,17 +71,17 @@ sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emula
 if >/dev/null pgrep firefox; then
   >&2 echo "Firefox is running, skipping setting tweaks"
 else
-  # whilst firefox is closed, and you've ran it at least once
+  ### whilst firefox is closed, and you've ran it at least once
   while read -r f; do
     if grep -q 'middlemouse.paste' "$f"; then continue; fi
     echo 'user_pref("middlemouse.paste", false);' >> "$f"
   done <<< $( find "$HOME"/snap/firefox/common/.mozilla/firefox/ -name prefs.js )
 fi
 
-# Set up ssh agent in 1Password
-# Possibly add new ssh key to GitHub
+### Set up ssh agent in 1Password
+### Possibly add new ssh key to GitHub
 
-# Install Hack Nerd Font
+### Install Hack Nerd Font
 if [[ "$(confirm_with 'Install Hack Nerd Font?')" == "y" ]]; then
   (
     tmpdir=$(mktemp -d)
@@ -100,12 +100,12 @@ test -d "$HOME"/.config/alacritty-conf || git clone git@github.com:LiamGoodacre/
 rm -f "$HOME"/.alacritty.toml
 ln -s /home/liam/.config/alacritty-conf/.alacritty.toml "$HOME"/.alacritty.toml
 
-# Note: ensure bash >=5
+### Note: ensure bash >=5
 test -d "$HOME"/.config/tmux-conf || git clone git@github.com:LiamGoodacre/tmux-conf.git "$HOME"/.config/tmux-conf
 rm -f "$HOME"/.tmux.conf
 ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
 
-# Needed for neovim Mason to install bzl & PureScript lsps
+### Needed for neovim Mason to install bzl & PureScript lsps
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 (
   export NVM_DIR="$HOME/.config/nvm"
@@ -146,7 +146,7 @@ if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
   sudo apt install obs-studio
 fi
 
-# for ghc dev
+# ### for ghc dev
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
 # cabal v2-install happy-2.0.2
 # cabal v2-install alex
