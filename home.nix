@@ -19,6 +19,8 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = [
+
+    pkgs.charm-freeze
     pkgs.entr
     pkgs.gum
     pkgs.idris2
