@@ -95,6 +95,12 @@ if [[ "$(confirm_with 'Install Hack Nerd Font?')" == "y" ]]; then
   )
 fi
 
+git config --global diff.color always
+git config --global diff.colorMoved zebra
+git config --global diff.colorMovedWS allow-indentation-change
+git config --global rebase.autostash true
+git config --global rebase.updateRefs true
+
 test -d "$HOME"/.config/tokyonight-theme || git clone https://github.com/folke/tokyonight.nvim.git "$HOME"/.config/tokyonight-theme
 test -d "$HOME"/.config/alacritty-conf || git clone git@github.com:LiamGoodacre/alacritty-conf.git "$HOME"/.config/alacritty-conf
 rm -f "$HOME"/.alacritty.toml
