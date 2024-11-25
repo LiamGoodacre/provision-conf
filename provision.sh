@@ -141,7 +141,8 @@ if which nix &>/dev/null; then
   >&2 echo "Nix already installed"
 elif [[ "$(confirm_with 'Install Nix?')" == "y" ]]; then
   sh <(curl -L https://nixos.org/nix/install) --daemon
-  nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+  # nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+  nix-channel --add https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz home-manager
   nix-channel --update
   nix-shell '<home-manager>' -A install
   home-manager build && home-manager switch
@@ -151,6 +152,8 @@ if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
   sudo add-apt-repository ppa:obsproject/obs-studio
   sudo apt install obs-studio
 fi
+
+sudo apt install python3-pip python3-venv
 
 # ### for ghc dev
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
