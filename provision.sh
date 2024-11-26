@@ -45,6 +45,7 @@ install_config \
   "$HOME"/.config/provision-conf/.bash_aliases
 
 mkdir -p "$HOME"/.config/home-manager
+rm -f "$HOME"/.config/home-manager/home.nix
 ln -s "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
 
 sudo apt update
@@ -95,11 +96,13 @@ if [[ "$(confirm_with 'Install Hack Nerd Font?')" == "y" ]]; then
   )
 fi
 
-git config --global diff.color always
-git config --global diff.colorMoved zebra
-git config --global diff.colorMovedWS allow-indentation-change
-git config --global rebase.autostash true
-git config --global rebase.updateRefs true
+if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
+  git config --global diff.color always
+  git config --global diff.colorMoved zebra
+  git config --global diff.colorMovedWS allow-indentation-change
+  git config --global rebase.autostash true
+  git config --global rebase.updateRefs true
+fi
 
 test -d "$HOME"/.config/tokyonight-theme || git clone https://github.com/folke/tokyonight.nvim.git "$HOME"/.config/tokyonight-theme
 test -d "$HOME"/.config/alacritty-conf || git clone git@github.com:LiamGoodacre/alacritty-conf.git "$HOME"/.config/alacritty-conf
@@ -112,22 +115,26 @@ rm -f "$HOME"/.tmux.conf
 ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
 
 ### Needed for neovim Mason to install bzl & PureScript lsps
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-(
-  export NVM_DIR="$HOME/.config/nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-  nvm install node
-  nvm use node
-)
+if [[ "$(confirm_with 'Install nvm & node?')" == "y" ]]; then
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  (
+    export NVM_DIR="$HOME/.config/nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    nvm install node
+    nvm use node
+  )
+fi
 
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-sudo rm /usr/bin/nvim
-sudo mv nvim.appimage /usr/bin/nvim
-sudo chmod +x /usr/bin/nvim
-test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
-for e in editor ex vi view pico; do
-  sudo update-alternatives --install `which $e` $e `which nvim` 50
-done
+if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
+  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+  sudo rm /usr/bin/nvim
+  sudo mv nvim.appimage /usr/bin/nvim
+  sudo chmod +x /usr/bin/nvim
+  test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
+  for e in editor ex vi view pico; do
+    sudo update-alternatives --install `which $e` $e `which nvim` 50
+  done
+fi
 
 if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
@@ -153,7 +160,13 @@ if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
   sudo apt install obs-studio
 fi
 
-sudo apt install python3-pip python3-venv
+if [[ "$(confirm_with 'Install pip & venv?')" == "y" ]]; then
+  sudo apt install python3-pip python3-venv
+fi
+
+if [[ "$(confirm_with 'Install Godot 4?')" == "y" ]]; then
+  sudo snap install godot4
+fi
 
 # ### for ghc dev
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
