@@ -16,6 +16,11 @@
   # release notes.
   home.stateVersion = "24.11"; # Please read the comment before changing.
 
+  nix = {
+    package = pkgs.nix;
+    settings.experimental-features = [ "nix-command" "flakes" ];
+  };
+
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = [
@@ -75,6 +80,13 @@
     # EDITOR = "nvim";
   };
 
+  programs.direnv = {
+    enable = true;
+    enableBashIntegration = true;
+    nix-direnv.enable = true;
+  };
+
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+
 }
