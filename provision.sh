@@ -60,6 +60,7 @@ install_config \
 mkdir -p "$HOME"/.config/home-manager
 replace_ln "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
 replace_ln "$HOME"/.config/provision-conf/flake.nix "$HOME"/.config/home-manager/flake.nix
+replace_ln "$HOME"/.config/provision-conf/flake.lock "$HOME"/.config/home-manager/flake.lock
 
 sudo apt update
 sudo apt upgrade
