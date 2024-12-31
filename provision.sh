@@ -34,6 +34,19 @@ EOF
   fi
 }
 
+ensure_git() {
+  local path=$1; shift
+  local url=$1; shift
+  test -d "$path" || git clone "$url" "$path"
+}
+
+replace_ln() {
+  local path=$1; shift
+  local target=$1; shift
+  rm -f "$target"
+  ln -s "$path" "$target"
+}
+
 install_config \
   'provision-conf/.bashrc' \
   "$HOME"/.bashrc \
@@ -45,8 +58,8 @@ install_config \
   "$HOME"/.config/provision-conf/.bash_aliases
 
 mkdir -p "$HOME"/.config/home-manager
-rm -f "$HOME"/.config/home-manager/home.nix
-ln -s "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
+replace_ln "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
+replace_ln "$HOME"/.config/provision-conf/flake.nix "$HOME"/.config/home-manager/flake.nix
 
 sudo apt update
 sudo apt upgrade
@@ -104,13 +117,13 @@ if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
   git config --global rebase.updateRefs true
 fi
 
-test -d "$HOME"/.config/tokyonight-theme || git clone https://github.com/folke/tokyonight.nvim.git "$HOME"/.config/tokyonight-theme
-test -d "$HOME"/.config/alacritty-conf || git clone git@github.com:LiamGoodacre/alacritty-conf.git "$HOME"/.config/alacritty-conf
+ensure_git "$HOME"/.config/tokyonight-theme https://github.com/folke/tokyonight.nvim.git
+ensure_git "$HOME"/.config/alacritty-conf git@github.com:LiamGoodacre/alacritty-conf.git
 rm -f "$HOME"/.alacritty.toml
 ln -s /home/liam/.config/alacritty-conf/.alacritty.toml "$HOME"/.alacritty.toml
 
 ### Note: ensure bash >=5
-test -d "$HOME"/.config/tmux-conf || git clone git@github.com:LiamGoodacre/tmux-conf.git "$HOME"/.config/tmux-conf
+ensure_git "$HOME"/.config/tmux-conf git@github.com:LiamGoodacre/tmux-conf.git
 rm -f "$HOME"/.tmux.conf
 ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
 
