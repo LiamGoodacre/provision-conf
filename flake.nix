@@ -11,6 +11,7 @@
 
     ghostty = {
       url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -33,7 +34,7 @@
           ./home.nix
           {
             home.packages = [
-              ghostty.packages.x86_64-linux.default
+              ghostty.packages.${system}.default
             ];
           }
         ];
