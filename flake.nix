@@ -9,9 +9,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixGL = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     ghostty = {
       url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -19,6 +23,7 @@
     nixpkgs,
     home-manager,
     ghostty,
+    nixGL,
     ...
   }:
     let
@@ -35,6 +40,7 @@
           {
             home.packages = [
               ghostty.packages.${system}.default
+              nixGL.packages.${system}.default
             ];
           }
         ];
