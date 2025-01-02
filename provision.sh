@@ -79,7 +79,11 @@ gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
 sudo tee /usr/bin/default-terminal <<"EOF"
 #!/usr/bin/env bash
 # exec snap run alacritty -e tmux new -A -s default
-exec nixGL ghostty -e tmux new -A -s default
+if [ $# -eq 0 ]; then
+  exec nixGL ghostty -e tmux new -A -s default
+else
+  exec nixGL ghostty -e "$@"
+fi
 EOF
 sudo chmod +x /usr/bin/default-terminal
 sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
