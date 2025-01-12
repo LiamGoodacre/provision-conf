@@ -196,3 +196,8 @@ fi
 # sudo apt install libpam-fprintd fprintd
 # fprintd-enroll # to enroll fingerprint
 # sudo pam-auth-update # Then select "Fingerprint authentication"
+
+## hold until 52
+# sudo apt-mark hold linux-headers-6.8.0-50
+# sudo apt-mark hold linux-headers-6.8.0-50-generic
+# sudo apt-mark hold linux-image-6.8.0-50-generic
