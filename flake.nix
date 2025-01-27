@@ -4,6 +4,7 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,6 +22,7 @@
 
   outputs = {
     nixpkgs,
+    unstable,
     home-manager,
     ghostty,
     nixGL,
@@ -29,6 +31,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      upkgs = unstable.legacyPackages.${system};
     in {
       homeConfigurations."liam" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -41,6 +44,7 @@
             home.packages = [
               ghostty.packages.${system}.default
               nixGL.packages.${system}.default
+              upkgs.ollama
             ];
           }
         ];
