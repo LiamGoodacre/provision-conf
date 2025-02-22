@@ -26,6 +26,7 @@
   home.packages = [
 
     pkgs.charm-freeze
+    pkgs.dtrx
     pkgs.duckstation
     pkgs.entr
     pkgs.gum
