@@ -26,9 +26,11 @@
   home.packages = [
 
     pkgs.charm-freeze
+    pkgs.duckstation
     pkgs.entr
     pkgs.gum
     pkgs.idris2
+    pkgs.pcsx2
     pkgs.zig
 
     # # It is sometimes useful to fine-tune packages, for example, by applying
