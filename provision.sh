@@ -84,6 +84,7 @@ sudo apt install \
   zlib1g-dev \
   fzf \
   tree \
+  moreutils \
   gnome-tweaks \
   vlc
 
