@@ -3,6 +3,8 @@
 set -euo pipefail
 shopt -s inherit_errexit
 
+# Utils {{{
+
 confirm_with() {
   local response=n
   read -p "$1 [y/N] " response
@@ -47,6 +49,16 @@ replace_ln() {
   ln -s "$path" "$target"
 }
 
+# }}} Utils
+
+if [[ "$LANG" != "en_GB.UTF-8" ]]; then
+  if [[ "$(confirm_with 'Set locale to en_GB.UTF-8?')" == "y" ]]; then
+    sudo locale-gen en_GB.UTF-8
+    sudo update-locale LANG=en_GB.UTF-8
+    sudo localectl set-locale LANG=en_GB.UTF-8
+  fi
+fi
+
 install_config \
   'provision-conf/.bashrc' \
   "$HOME"/.bashrc \
@@ -57,37 +69,33 @@ install_config \
   "$HOME"/.bash_aliases \
   "$HOME"/.config/provision-conf/.bash_aliases
 
-mkdir -p "$HOME"/.config/home-manager
-replace_ln "$HOME"/.config/provision-conf/home.nix "$HOME"/.config/home-manager/home.nix
-replace_ln "$HOME"/.config/provision-conf/flake.nix "$HOME"/.config/home-manager/flake.nix
-replace_ln "$HOME"/.config/provision-conf/flake.lock "$HOME"/.config/home-manager/flake.lock
+gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
 
 sudo apt update
 sudo apt upgrade
 
-if [[ "$LANG" != "en_GB.UTF-8" ]]; then
-  sudo locale-gen en_GB.UTF-8
-  sudo update-locale LANG=en_GB.UTF-8
-  sudo localectl set-locale LANG=en_GB.UTF-8
+sudo apt install \
+  curl \
+  git \
+  xsel \
+  xclip \
+  ripgrep \
+  build-essential \
+  zlib1g-dev \
+  fzf \
+  tree \
+  gnome-tweaks \
+  vlc
+
+sudo snap install \
+  htop
+
+if [[ "$(confirm_with 'Install 1Password?')" == "y" ]]; then
+  curl -L https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb > ~/Downloads/1password-latest.deb
+  sudo apt install ~/Downloads/1password-latest.deb
 fi
 
-sudo snap install alacritty 1password htop gimp
-sudo apt install build-essential zlib1g-dev git curl xsel xclip ripgrep tmux gnome-tweaks fzf tree vlc
-
-gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
-
-sudo tee /usr/bin/default-terminal <<"EOF"
-#!/usr/bin/env bash
-# exec snap run alacritty -e tmux new -A -s default
-if [ $# -eq 0 ]; then
-  exec nixGL ghostty -e tmux new -A -s default
-else
-  exec nixGL ghostty -e "$@"
-fi
-EOF
-sudo chmod +x /usr/bin/default-terminal
-sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
-
+# Disable middle mouse paste in Firefox {{{
 if >/dev/null pgrep firefox; then
   >&2 echo "Firefox is running, skipping setting tweaks"
 else
@@ -97,24 +105,30 @@ else
     echo 'user_pref("middlemouse.paste", false);' >> "$f"
   done <<< $( find "$HOME"/snap/firefox/common/.mozilla/firefox/ -name prefs.js )
 fi
+# }}} Disable middle mouse paste in Firefox
+
+ensure_git "$HOME"/.config/tokyonight-theme https://github.com/folke/tokyonight.nvim.git
+
+# Ghostty {{{
+sudo snap install ghostty --classic
+ensure_git "$HOME"/.config/ghostty git@github.com:LiamGoodacre/ghostty-conf.git
+sudo tee /usr/bin/default-terminal <<"EOF"
+#!/usr/bin/env bash
+# exec snap run alacritty -e tmux new -A -s default
+if [ $# -eq 0 ]; then
+  exec ghostty -e tmux new -A -s default
+else
+  exec ghostty -e "$@"
+fi
+EOF
+sudo chmod +x /usr/bin/default-terminal
+sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
+# }}} Ghostty
 
 ### Set up ssh agent in 1Password
 ### Possibly add new ssh key to GitHub
 
-### Install Hack Nerd Font
-if [[ "$(confirm_with 'Install Hack Nerd Font?')" == "y" ]]; then
-  (
-    tmpdir=$(mktemp -d)
-    trap 'rm -rf "$tmpdir"' EXIT
-    curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip -o "$tmpdir"/Hack.zip
-    cd "$tmpdir"
-    unzip Hack.zip
-    find ~/.local/share/fonts/ -name 'HackNerdFont*.ttf' -exec rm {} \;
-    cp -r ./*.ttf ~/.local/share/fonts/
-    fc-cache -fv
-  )
-fi
-
+# Configure git {{{
 if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
   git config --global diff.color always
   git config --global diff.colorMoved zebra
@@ -122,56 +136,62 @@ if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
   git config --global rebase.autostash true
   git config --global rebase.updateRefs true
 fi
+# }}} Configure git
 
-ensure_git "$HOME"/.config/tokyonight-theme https://github.com/folke/tokyonight.nvim.git
-ensure_git "$HOME"/.config/alacritty-conf git@github.com:LiamGoodacre/alacritty-conf.git
-rm -f "$HOME"/.alacritty.toml
-ln -s /home/liam/.config/alacritty-conf/.alacritty.toml "$HOME"/.alacritty.toml
-
-### Note: ensure bash >=5
-ensure_git "$HOME"/.config/tmux-conf git@github.com:LiamGoodacre/tmux-conf.git
-rm -f "$HOME"/.tmux.conf
-ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
-
-### Needed for neovim Mason to install bzl & PureScript lsps
-if [[ "$(confirm_with 'Install nvm & node?')" == "y" ]]; then
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-  (
-    export NVM_DIR="$HOME/.config/nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-    nvm install node
-    nvm use node
-  )
-fi
-
-if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
-  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-  sudo rm /usr/bin/nvim
-  sudo mv nvim.appimage /usr/bin/nvim
-  sudo chmod +x /usr/bin/nvim
-  test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
-  for e in editor ex vi view pico; do
-    sudo update-alternatives --install `which $e` $e `which nvim` 50
-  done
+### Install Hack Nerd Font
+if [[ "$(confirm_with 'Install Hack font?')" == "y" ]]; then
+  sudo apt install fonts-hack-ttf
 fi
 
 if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 fi
 
+# Tmux {{{
+if [[ "$(confirm_with 'Install tmux')" == "y" ]]; then
+  sudo apt install tmux
+  ### Note: ensure bash >=5
+  ensure_git "$HOME"/.config/tmux-conf git@github.com:LiamGoodacre/tmux-conf.git
+  rm -f "$HOME"/.tmux.conf
+  ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
+fi
+# }}} Tmux
+
+# NVM/Node {{{
+### Needed for neovim Mason to install bzl & PureScript lsps
+if [[ "$(confirm_with 'Install nvm & node?')" == "y" ]]; then
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  (
+    export NVM_DIR="$HOME/.config/nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    nvm install node latest
+    nvm use node
+  )
+fi
+# }}} NVM/Node
+
+# Neovim {{{
+if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
+  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+  sudo rm /usr/bin/nvim
+  sudo mv nvim-linux-x86_64.appimage /usr/bin/nvim
+  sudo chmod +x /usr/bin/nvim
+  for e in editor ex vi view pico; do
+    sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
+  done
+  test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
+fi
+# }}} Neovim
+
 if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 
-if which nix &>/dev/null; then
-  >&2 echo "Nix already installed"
-elif [[ "$(confirm_with 'Install Nix?')" == "y" ]]; then
-  sh <(curl -L https://nixos.org/nix/install) --daemon
-  # nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
-  nix-channel --add https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz home-manager
-  nix-channel --update
-  nix-shell '<home-manager>' -A install
-  home-manager build && home-manager switch
+if [[ "$(confirm_with 'Install gum?')" == "y" ]]; then
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+  sudo apt update && sudo apt install gum
 fi
 
 if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
