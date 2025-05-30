@@ -51,6 +51,7 @@ replace_ln() {
 
 # }}} Utils
 
+# Lang {{{
 if [[ "$LANG" != "en_GB.UTF-8" ]]; then
   if [[ "$(confirm_with 'Set locale to en_GB.UTF-8?')" == "y" ]]; then
     sudo locale-gen en_GB.UTF-8
@@ -58,22 +59,28 @@ if [[ "$LANG" != "en_GB.UTF-8" ]]; then
     sudo localectl set-locale LANG=en_GB.UTF-8
   fi
 fi
+# }}} Lang
 
+# .bashrc {{{
 install_config \
   'provision-conf/.bashrc' \
   "$HOME"/.bashrc \
   "$HOME"/.config/provision-conf/.bashrc
+# }}} .bashrc
 
+# .bash_aliases {{{
 install_config \
   'provision-conf/.bash_aliases' \
   "$HOME"/.bash_aliases \
   "$HOME"/.config/provision-conf/.bash_aliases
+# }}} .bash_aliases
 
 gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
 
 sudo apt update
 sudo apt upgrade
 
+# Basic tools {{{
 sudo apt install \
   curl \
   git \
@@ -87,14 +94,9 @@ sudo apt install \
   moreutils \
   gnome-tweaks \
   vlc
-
 sudo snap install \
   htop
-
-if [[ "$(confirm_with 'Install 1Password?')" == "y" ]]; then
-  curl -L https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb > ~/Downloads/1password-latest.deb
-  sudo apt install ~/Downloads/1password-latest.deb
-fi
+# }}} Basic tools
 
 # Disable middle mouse paste in Firefox {{{
 if >/dev/null pgrep firefox; then
@@ -109,6 +111,21 @@ fi
 # }}} Disable middle mouse paste in Firefox
 
 ensure_git "$HOME"/.config/tokyonight-theme https://github.com/folke/tokyonight.nvim.git
+
+# 1Password {{{
+if [[ "$(confirm_with 'Install 1Password?')" == "y" ]]; then
+  curl -L https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb > ~/Downloads/1password-latest.deb
+  sudo apt install ~/Downloads/1password-latest.deb
+fi
+# }}} 1Password
+
+# Fingerprint reader {{{
+if [[ "$(confirm_with 'Setup fingerprint reader & auth')" == "y" ]]; then
+  sudo apt install libpam-fprintd fprintd
+  fprintd-enroll # to enroll fingerprint
+  sudo pam-auth-update # Then select "Fingerprint authentication"
+fi
+# }}} Fingerprint reader
 
 # Ghostty {{{
 sudo snap install ghostty --classic
@@ -126,9 +143,6 @@ sudo chmod +x /usr/bin/default-terminal
 sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
 # }}} Ghostty
 
-### Set up ssh agent in 1Password
-### Possibly add new ssh key to GitHub
-
 # Configure git {{{
 if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
   git config --global diff.color always
@@ -139,14 +153,17 @@ if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
 fi
 # }}} Configure git
 
-### Install Hack Nerd Font
+# Hack Font {{{
 if [[ "$(confirm_with 'Install Hack font?')" == "y" ]]; then
   sudo apt install fonts-hack-ttf
 fi
+# }}} Hack Font
 
+# GHCup {{{
 if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 fi
+# }}} GHCup
 
 # Tmux {{{
 if [[ "$(confirm_with 'Install tmux')" == "y" ]]; then
@@ -184,39 +201,47 @@ if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
 fi
 # }}} Neovim
 
+# Tailscale {{{
 if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
+# }}} Tailscale
 
+# Gum {{{
 if [[ "$(confirm_with 'Install gum?')" == "y" ]]; then
   sudo mkdir -p /etc/apt/keyrings
   curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
   echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
   sudo apt update && sudo apt install gum
 fi
+# }}} Gum
 
+# OBS Studio {{{
 if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
   sudo add-apt-repository ppa:obsproject/obs-studio
   sudo apt install obs-studio
 fi
+# }}} OBS Studio
 
+# Pip & venv {{{
 if [[ "$(confirm_with 'Install pip & venv?')" == "y" ]]; then
   sudo apt install python3-pip python3-venv
 fi
+# }}} Pip & venv
 
+# Godot {{{
 if [[ "$(confirm_with 'Install Godot 4?')" == "y" ]]; then
   sudo snap install godot4
 fi
+# }}} Godot
+
+### Set up ssh agent in 1Password
+### Possibly add new ssh key to GitHub
 
 # ### for ghc dev
 # sudo apt-get install build-essential git autoconf python3 libgmp-dev libnuma-dev libncurses-dev
 # cabal v2-install happy-2.0.2
 # cabal v2-install alex
-
-# ### Fingerprint reader & auth
-# sudo apt install libpam-fprintd fprintd
-# fprintd-enroll # to enroll fingerprint
-# sudo pam-auth-update # Then select "Fingerprint authentication"
 
 ## hold until 52
 # sudo apt-mark hold linux-headers-6.8.0-50
