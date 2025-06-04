@@ -1,3 +1,5 @@
+export PATH="$PATH":"$HOME"/.config/provision-conf/scripts
+
 ### MY_PS1 {{{
 
 function __ps1() {
