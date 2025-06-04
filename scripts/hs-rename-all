@@ -1,0 +1,33 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+rename() {
+  local from="$1"
+  local to="$2"
+  local file="$3"
+  nvim --headless \
+    +'set nofoldenable' \
+    +'normal! zR' \
+    +"%TSQ/^/((module)@_ (#eq? @_ \"$from.\"))/norm c${#from}l$to" \
+    +"%TSQ/^/((module)@_ (#eq? @_ \"$from\"))/norm c${#from}l$to" \
+    +'x' \
+    -- "$file"
+}
+
+main() {
+  if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <from> <to>" >&2
+    exit 1
+  fi
+
+  local from="$1"
+  local to="$2"
+  git grep -l -E -e "as $from\$" -- '**.hs' | while read -r file; do
+    rename "$from" "$to" "$file"
+  done
+}
+
+main "$@"
