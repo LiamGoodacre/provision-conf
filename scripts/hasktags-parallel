@@ -1,0 +1,40 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+call_to_hasktags() {
+  local root
+  root=$(git rev-parse --show-toplevel)
+  cd "$root" >/dev/null
+  local output
+  output=$(mktemp)
+  echo "$output"
+  hasktags -c -o "$output" -- "$@"
+}
+
+body() {
+  if output=$(
+    git ls-files -- '**.hs' \
+      | HASKTAGS_CALL=y xargs -P"$(nproc)" hasktags-parallel
+  ); then
+    IFS=$'\n' && for f in $output; do
+      cat "$f"
+    done | LC_COLLATE=C sort | sponge tags;
+  else
+    echo "Failed to generate tags." >&2
+    exit 1
+  fi
+}
+
+main() {
+  if [[ ${HASKTAGS_CALL:-} == 'y' ]]; then
+    call_to_hasktags "$@"
+    exit 0
+  fi
+
+  body
+}
+
+main "$@"
