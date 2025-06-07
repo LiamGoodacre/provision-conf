@@ -7,20 +7,29 @@ shopt -s inherit_errexit
 
 confirm_with() {
   local response=n
-  read -p "$1 [y/N] " response
-  if [[ "$response" == "y" ]]; then echo y; else echo n; fi
+  if which gum &>/dev/null; then
+    if gum confirm "$1"; then
+      echo -n y
+    else
+      echo -n n
+    fi
+  else
+    read -p "$1 [y/N] " response
+    if [[ "$response" == "y" ]]; then
+      echo -n y
+    else
+      echo -n n
+    fi
+  fi
 }
 
 confirm_modify() {
-  local path=$1; shift
-  local response=y
-
+  local path=$1
   if [[ -f "$path" ]]; then
-    response=n
-    read -p "Modify $path? [y/N] " response
+    confirm_with "Modify $path?"
+  else
+    echo -n y
   fi
-
-  if [[ "$response" == "y" ]]; then echo y; else echo n; fi
 }
 
 install_config() {
@@ -97,6 +106,15 @@ sudo apt install \
 sudo snap install \
   htop
 # }}} Basic tools
+
+# Gum {{{
+if [[ "$(confirm_with 'Install gum?')" == "y" ]]; then
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+  sudo apt update && sudo apt install gum
+fi
+# }}} Gum
 
 # Disable middle mouse paste in Firefox {{{
 if >/dev/null pgrep firefox; then
@@ -207,15 +225,6 @@ if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
 # }}} Tailscale
-
-# Gum {{{
-if [[ "$(confirm_with 'Install gum?')" == "y" ]]; then
-  sudo mkdir -p /etc/apt/keyrings
-  curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
-  echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
-  sudo apt update && sudo apt install gum
-fi
-# }}} Gum
 
 # OBS Studio {{{
 if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
