@@ -128,19 +128,20 @@ fi
 # }}} Fingerprint reader
 
 # Ghostty {{{
-sudo snap install ghostty --classic
-ensure_git "$HOME"/.config/ghostty git@github.com:LiamGoodacre/ghostty-conf.git
-sudo tee /usr/bin/default-terminal <<"EOF"
+if [[ "$(confirm_with 'Install Ghostty?')" == "y" ]]; then
+  sudo snap install ghostty --classic
+  ensure_git "$HOME"/.config/ghostty git@github.com:LiamGoodacre/ghostty-conf.git
+  sudo tee /usr/bin/default-terminal <<"EOF"
 #!/usr/bin/env bash
-# exec snap run alacritty -e tmux new -A -s default
 if [ $# -eq 0 ]; then
   exec ghostty -e tmux new -A -s default
 else
   exec ghostty -e "$@"
 fi
 EOF
-sudo chmod +x /usr/bin/default-terminal
-sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
+  sudo chmod +x /usr/bin/default-terminal
+  sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
+fi
 # }}} Ghostty
 
 # Configure git {{{
