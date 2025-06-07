@@ -245,6 +245,20 @@ if [[ "$(confirm_with 'Install Godot 4?')" == "y" ]]; then
 fi
 # }}} Godot
 
+# Bazelisk {{{
+if [[ "$(confirm_with 'Install Bazel(isk)?')" == "y" ]]; then
+  curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.26.0/bazelisk-amd64.deb > ~/Downloads/bazelisk-amd64.deb
+  sudo apt install ~/Downloads/bazelisk-amd64.deb
+  if [[ -f /usr/bin/bazel ]]; then
+    sudo rm /usr/bin/bazel
+  fi
+  sudo ln -s /usr/bin/bazelisk /usr/bin/bazel
+
+  # rules_haskell requires some extra packages
+  sudo apt install build-essential libffi-dev libgmp-dev libtinfo6 libtinfo-dev python3 openjdk-11-jdk
+fi
+# }}} Bazelisk
+
 ### Set up ssh agent in 1Password
 ### Possibly add new ssh key to GitHub
 
