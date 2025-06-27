@@ -209,14 +209,18 @@ fi
 
 # Neovim {{{
 if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
-  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
-  sudo rm /usr/bin/nvim
-  sudo mv nvim-linux-x86_64.appimage /usr/bin/nvim
-  sudo chmod +x /usr/bin/nvim
-  for e in editor ex vi view pico; do
-    sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
-  done
-  test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
+  (
+    tmpdir=$(mktemp -d)
+    cd "$tmpdir" || exit 1
+    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+    2>/dev/null sudo rm /usr/bin/nvim || true
+    sudo install -m 755 nvim-linux-x86_64.appimage /usr/bin/nvim
+    rm nvim-linux-x86_64.appimage
+    for e in editor ex vi view pico; do
+      sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
+    done
+    test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
+  )
 fi
 # }}} Neovim
 
