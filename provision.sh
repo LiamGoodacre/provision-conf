@@ -224,6 +224,21 @@ if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
 fi
 # }}} Neovim
 
+# Jujitsu {{{
+if [[ "$(confirm_with 'Install Jujitsu?')" == "y" ]]; then
+  (
+    tmpdir=$(mktemp -d)
+    cd "$tmpdir" || exit 1
+    curl -LO https://github.com/jj-vcs/jj/releases/download/v0.30.0/jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
+    tar -xzf jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz ./jj
+    2>/dev/null sudo rm /usr/bin/jj || true
+    sudo install -m 755 jj /usr/bin/jj
+    rm jj
+    rm jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
+  )
+fi
+# }}} Jujitsu
+
 # Tailscale {{{
 if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
   curl -fsSL https://tailscale.com/install.sh | sh
