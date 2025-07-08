@@ -1,5 +1,6 @@
 export EDITOR=nvim
-export VISUAL=nvim
+export GIT_EDITOR="$EDITOR"
+export VISUAL="$EDITOR"
 export MY_CONFIG_DIR="$HOME"/.config/
 
 modal() {
