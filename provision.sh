@@ -211,11 +211,22 @@ fi
 if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
   (
     tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
     cd "$tmpdir" || exit 1
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+
     2>/dev/null sudo rm /usr/bin/nvim || true
-    sudo install -m 755 nvim-linux-x86_64.appimage /usr/bin/nvim
+
+    sudo install -m 755 nvim-linux-x86_64.appimage /usr/bin/nvim.appimage
     rm nvim-linux-x86_64.appimage
+
+    cat <<'EOF' >>./nvim
+#!/bin/bash
+exec /usr/bin/nvim.appimage --appimage-extract-and-run "$@"
+EOF
+    sudo install -m 755 ./nvim /usr/bin/nvim
+    rm ./nvim
+
     for e in editor ex vi view pico; do
       sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
     done
