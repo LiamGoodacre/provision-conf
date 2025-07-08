@@ -42,3 +42,10 @@ config-up() {
     "$which_config" \
     git pull --rebase --autostash
 }
+
+complete_with_brs() {
+  if [[ "${#COMP_WORDS[@]}" -gt 3 ]]; then return; fi
+  COMPREPLY+=($(compgen -W "$(brs)" -- "${COMP_WORDS[-1]}"))
+}
+
+complete -F complete_with_brs v
