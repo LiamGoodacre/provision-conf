@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+git diff --name-only "${@}" | xargs nvim
