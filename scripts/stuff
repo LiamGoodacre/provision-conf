@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+relative_to="${1:-master}"
+(
+  git diff --name-only
+  git diff --name-only --staged
+  git diff --name-only "$relative_to"...
+) | sort -u
