@@ -289,6 +289,16 @@ if [[ "$(confirm_with 'Install Bazel(isk)?')" == "y" ]]; then
 fi
 # }}} Bazelisk
 
+# dotnet {{{
+if [[ "$(confirm_with 'Install dotnet?')" == "y" ]]; then
+  # sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0
+  sudo apt-get install -y dotnet-sdk-8.0 aspnetcore-runtime-8.0
+  # sudo snap install dotnet-sdk --classic
+  # sudo snap install dotnet-runtime-80
+  # sudo snap install --classic dotnet
+fi
+# }}} dotnet
+
 ### Set up ssh agent in 1Password
 ### Possibly add new ssh key to GitHub
 
