@@ -21,7 +21,7 @@ configs() {
 }
 
 config-pick() {
-  configs | gum choose --header "Choose a config"
+  configs | gum filter --header "Choose a config"
 }
 
 config() {
