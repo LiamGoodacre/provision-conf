@@ -314,11 +314,9 @@ fi
 
 # dotnet {{{
 if [[ "$(confirm_with 'Install dotnet?')" == "y" ]]; then
-  # sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0
-  sudo apt-get install -y dotnet-sdk-8.0 aspnetcore-runtime-8.0
-  # sudo snap install dotnet-sdk --classic
-  # sudo snap install dotnet-runtime-80
-  # sudo snap install --classic dotnet
+  sudo add-apt-repository ppa:dotnet/backports
+  sudo apt-get update
+  sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0
 fi
 # }}} dotnet
 
