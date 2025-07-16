@@ -91,21 +91,33 @@ sudo apt upgrade
 
 # Basic tools {{{
 sudo apt install \
-  curl \
-  git \
-  xsel \
-  xclip \
-  ripgrep \
   build-essential \
-  zlib1g-dev \
+  curl \
+  fonts-hack-ttf \
   fzf \
-  tree \
-  moreutils \
+  git \
   gnome-tweaks \
-  vlc
+  moreutils \
+  python3-pip \
+  python3-venv \
+  ripgrep \
+  tmux \
+  tree \
+  vlc \
+  xclip \
+  xsel \
+  zlib1g-dev
 sudo snap install \
   htop
 # }}} Basic tools
+
+# Configure git {{{
+git config --global diff.color always
+git config --global diff.colorMoved zebra
+git config --global diff.colorMovedWS allow-indentation-change
+git config --global rebase.autostash true
+git config --global rebase.updateRefs true
+# }}} Configure git
 
 # Gum {{{
 if [[ "$(confirm_with 'Install gum?')" == "y" ]]; then
@@ -129,27 +141,50 @@ fi
 # }}} Disable middle mouse paste in Firefox
 
 ensure_git "$HOME"/.config/tokyonight-theme https://github.com/folke/tokyonight.nvim.git
+ensure_git "$HOME"/.config/ghostty git@github.com:LiamGoodacre/ghostty-conf.git
+ensure_git "$HOME"/.config/tmux-conf git@github.com:LiamGoodacre/tmux-conf.git
+ensure_git "$HOME"/.config/nvim git@github.com:LiamGoodacre/nvim-conf.git
 
-# 1Password {{{
-if [[ "$(confirm_with 'Install 1Password?')" == "y" ]]; then
-  curl -L https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb > ~/Downloads/1password-latest.deb
-  sudo apt install ~/Downloads/1password-latest.deb
-fi
-# }}} 1Password
+tasks=(
+  "1password"
+  "bazel"
+  "configure-git"
+  "docker"
+  "dotnet"
+  "fingerprint"
+  "ghcup"
+  "ghostty"
+  "godot"
+  "jujitsu"
+  "neovim"
+  "nvm-node"
+  "obs-studio"
+  "rust"
+  "tailscale"
+  "tmux-conf"
+)
 
-# Fingerprint reader {{{
-if [[ "$(confirm_with 'Setup fingerprint reader & auth')" == "y" ]]; then
-  sudo apt install libpam-fprintd fprintd
-  fprintd-enroll # to enroll fingerprint
-  sudo pam-auth-update # Then select "Fingerprint authentication"
-fi
-# }}} Fingerprint reader
+gum filter \
+  --header "Select tasks to run" \
+  --no-limit \
+  "${tasks[@]}" | \
+while read -r task; do
 
-# Ghostty {{{
-if [[ "$(confirm_with 'Install Ghostty?')" == "y" ]]; then
-  sudo snap install ghostty --classic
-  ensure_git "$HOME"/.config/ghostty git@github.com:LiamGoodacre/ghostty-conf.git
-  sudo tee /usr/bin/default-terminal <<"EOF"
+  case "$task" in
+    "1password") # 1Password {{{
+      curl -L https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb > ~/Downloads/1password-latest.deb
+      sudo apt install ~/Downloads/1password-latest.deb
+    ;; # }}} 1Password
+
+    "fingerprint") # Fingerprint reader {{{
+      sudo apt install libpam-fprintd fprintd
+      fprintd-enroll # to enroll fingerprint
+      sudo pam-auth-update # Then select "Fingerprint authentication"
+    ;; # }}} Fingerprint reader
+
+    "ghostty") # Ghostty {{{
+      sudo snap install ghostty --classic
+      sudo tee /usr/bin/default-terminal <<"EOF"
 #!/usr/bin/env bash
 if [ $# -eq 0 ]; then
   exec ghostty -e tmux new -A -s default
@@ -157,168 +192,130 @@ else
   exec ghostty -e "$@"
 fi
 EOF
-  sudo chmod +x /usr/bin/default-terminal
-  sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
-fi
-# }}} Ghostty
+      sudo chmod +x /usr/bin/default-terminal
+      sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/default-terminal 50
+    ;; # }}} Ghostty
 
-# Configure git {{{
-if [[ "$(confirm_with 'Configure git?')" == "y" ]]; then
-  git config --global diff.color always
-  git config --global diff.colorMoved zebra
-  git config --global diff.colorMovedWS allow-indentation-change
-  git config --global rebase.autostash true
-  git config --global rebase.updateRefs true
-fi
-# }}} Configure git
+    "ghcup") # GHCup {{{
+      curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+    ;; # }}} GHCup
 
-# Hack Font {{{
-if [[ "$(confirm_with 'Install Hack font?')" == "y" ]]; then
-  sudo apt install fonts-hack-ttf
-fi
-# }}} Hack Font
+    "tmux-conf") # tmux-conf {{{
+      ### Note: ensure bash >=5
+      rm -f "$HOME"/.tmux.conf
+      ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
+    ;; # }}} tmux-conf
 
-# GHCup {{{
-if [[ "$(confirm_with 'Install ghcup?')" == "y" ]]; then
-  curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-fi
-# }}} GHCup
+    "nvm-node") # NVM/Node {{{
+      ### Needed for neovim Mason to install bzl & PureScript lsps
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+      (
+        export NVM_DIR="$HOME/.config/nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+        nvm install node latest
+        nvm use node
+      )
+    ;; # }}} NVM/Node
 
-# Tmux {{{
-if [[ "$(confirm_with 'Install tmux')" == "y" ]]; then
-  sudo apt install tmux
-  ### Note: ensure bash >=5
-  ensure_git "$HOME"/.config/tmux-conf git@github.com:LiamGoodacre/tmux-conf.git
-  rm -f "$HOME"/.tmux.conf
-  ln -s /home/liam/.config/tmux-conf/.tmux.conf "$HOME"/.tmux.conf
-fi
-# }}} Tmux
+    "neovim") # Neovim {{{
+      (
+        tmpdir=$(mktemp -d)
+        trap 'rm -rf "$tmpdir"' EXIT
+        cd "$tmpdir" || exit 1
+        curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
 
-# NVM/Node {{{
-### Needed for neovim Mason to install bzl & PureScript lsps
-if [[ "$(confirm_with 'Install nvm & node?')" == "y" ]]; then
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-  (
-    export NVM_DIR="$HOME/.config/nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-    nvm install node latest
-    nvm use node
-  )
-fi
-# }}} NVM/Node
+        2>/dev/null sudo rm /usr/bin/nvim || true
 
-# Neovim {{{
-if [[ "$(confirm_with 'Install neovim?')" == "y" ]]; then
-  (
-    tmpdir=$(mktemp -d)
-    trap 'rm -rf "$tmpdir"' EXIT
-    cd "$tmpdir" || exit 1
-    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+        sudo install -m 755 nvim-linux-x86_64.appimage /usr/bin/nvim.appimage
+        rm nvim-linux-x86_64.appimage
 
-    2>/dev/null sudo rm /usr/bin/nvim || true
-
-    sudo install -m 755 nvim-linux-x86_64.appimage /usr/bin/nvim.appimage
-    rm nvim-linux-x86_64.appimage
-
-    cat <<'EOF' >>./nvim
+        cat <<'EOF' >>./nvim
 #!/bin/bash
 exec /usr/bin/nvim.appimage --appimage-extract-and-run "$@"
 EOF
-    sudo install -m 755 ./nvim /usr/bin/nvim
-    rm ./nvim
+        sudo install -m 755 ./nvim /usr/bin/nvim
+        rm ./nvim
 
-    for e in editor ex vi view pico; do
-      sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
-    done
-    test -d "$HOME"/.config/nvim || git clone git@github.com:LiamGoodacre/nvim-conf.git "$HOME"/.config/nvim
-  )
-fi
-# }}} Neovim
+        for e in editor ex vi view pico; do
+          sudo update-alternatives --install `which $e` $e /usr/bin/nvim 50
+        done
+      )
+    ;; # }}} Neovim
 
-# Jujitsu {{{
-if [[ "$(confirm_with 'Install Jujitsu?')" == "y" ]]; then
-  (
-    tmpdir=$(mktemp -d)
-    cd "$tmpdir" || exit 1
-    curl -LO https://github.com/jj-vcs/jj/releases/download/v0.30.0/jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
-    tar -xzf jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz ./jj
-    2>/dev/null sudo rm /usr/bin/jj || true
-    sudo install -m 755 jj /usr/bin/jj
-    rm jj
-    rm jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
-  )
-fi
-# }}} Jujitsu
+    "jujitsu") # Jujitsu {{{
+      (
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir" || exit 1
+        curl -LO https://github.com/jj-vcs/jj/releases/download/v0.30.0/jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
+        tar -xzf jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz ./jj
+        2>/dev/null sudo rm /usr/bin/jj || true
+        sudo install -m 755 jj /usr/bin/jj
+        rm jj
+        rm jj-v0.30.0-x86_64-unknown-linux-musl.tar.gz
+      )
+    ;; # }}} Jujitsu
 
-# Tailscale {{{
-if [[ "$(confirm_with 'Install/upgrade tailscale?')" == "y" ]]; then
-  curl -fsSL https://tailscale.com/install.sh | sh
-fi
-# }}} Tailscale
+    "tailscale") # Tailscale {{{
+      curl -fsSL https://tailscale.com/install.sh | sh
+    ;; # }}} Tailscale
 
-# OBS Studio {{{
-if [[ "$(confirm_with 'Install OBS Studio?')" == "y" ]]; then
-  sudo add-apt-repository ppa:obsproject/obs-studio
-  sudo apt install obs-studio
-fi
-# }}} OBS Studio
+    "obs-studio") # OBS Studio {{{
+      sudo add-apt-repository ppa:obsproject/obs-studio
+      sudo apt install obs-studio
+    ;; # }}} OBS Studio
 
-# Pip & venv {{{
-if [[ "$(confirm_with 'Install pip & venv?')" == "y" ]]; then
-  sudo apt install python3-pip python3-venv
-fi
-# }}} Pip & venv
+    "godot") # Godot {{{
+      sudo snap install godot4
+    ;; # }}} Godot
 
-# Godot {{{
-if [[ "$(confirm_with 'Install Godot 4?')" == "y" ]]; then
-  sudo snap install godot4
-fi
-# }}} Godot
+    "bazel") # Bazelisk {{{
+      curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.26.0/bazelisk-amd64.deb > ~/Downloads/bazelisk-amd64.deb
+      sudo apt install ~/Downloads/bazelisk-amd64.deb
+      if [[ -f /usr/bin/bazel ]]; then
+        sudo rm /usr/bin/bazel
+      fi
+      sudo ln -s /usr/bin/bazelisk /usr/bin/bazel
+      # rules_haskell requires some extra packages
+      sudo apt install build-essential libffi-dev libgmp-dev libtinfo6 libtinfo-dev python3 openjdk-11-jdk
+    ;; # }}} Bazelisk
 
-# Bazelisk {{{
-if [[ "$(confirm_with 'Install Bazel(isk)?')" == "y" ]]; then
-  curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.26.0/bazelisk-amd64.deb > ~/Downloads/bazelisk-amd64.deb
-  sudo apt install ~/Downloads/bazelisk-amd64.deb
-  if [[ -f /usr/bin/bazel ]]; then
-    sudo rm /usr/bin/bazel
-  fi
-  sudo ln -s /usr/bin/bazelisk /usr/bin/bazel
+    "docker") # Docker {{{
+      # Add Docker's official GPG key:
+      sudo apt-get update
+      sudo apt-get install ca-certificates curl
+      sudo install -m 0755 -d /etc/apt/keyrings
+      sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+      sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-  # rules_haskell requires some extra packages
-  sudo apt install build-essential libffi-dev libgmp-dev libtinfo6 libtinfo-dev python3 openjdk-11-jdk
-fi
-# }}} Bazelisk
+      # Add the repository to Apt sources:
+      echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      sudo apt-get update
+      sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Docker {{{
-if [[ "$(confirm_with 'Install Docker?')" == "y" ]]; then
-  # Add Docker's official GPG key:
-  sudo apt-get update
-  sudo apt-get install ca-certificates curl
-  sudo install -m 0755 -d /etc/apt/keyrings
-  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  sudo chmod a+r /etc/apt/keyrings/docker.asc
+      sudo groupadd docker
+      sudo usermod -aG docker $USER
+      newgrp docker
+    ;; # }}} Docker
 
-  # Add the repository to Apt sources:
-  echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt-get update
-  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    "dotnet") # dotnet {{{
+      sudo add-apt-repository ppa:dotnet/backports
+      sudo apt-get update
+      sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0
+    ;; # }}} dotnet
 
-  sudo groupadd docker
-  sudo usermod -aG docker $USER
-  newgrp docker
-fi
-# }}} Docker
+    "rust") # Rust {{{
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      #source "$HOME"/.cargo/env
+      # Install rust-analyzer
+      #rustup component add rust-src
+      #rustup component add rust-analyzer-preview
+    ;; # }}} Rust
 
-# dotnet {{{
-if [[ "$(confirm_with 'Install dotnet?')" == "y" ]]; then
-  sudo add-apt-repository ppa:dotnet/backports
-  sudo apt-get update
-  sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0
-fi
-# }}} dotnet
+  esac
+done
 
 ### Set up ssh agent in 1Password
 ### Possibly add new ssh key to GitHub
