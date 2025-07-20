@@ -85,6 +85,8 @@ install_config \
 # }}} .bash_aliases
 
 gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+gsettings set org.gnome.desktop.peripherals.keyboard delay 300 # default is 500
+gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 20 # default is 30
 
 sudo apt update
 sudo apt upgrade
