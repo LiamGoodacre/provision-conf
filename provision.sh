@@ -162,6 +162,7 @@ tasks=(
   "rust"
   "tailscale"
   "tmux-conf"
+  "zig"
 )
 
 gum filter \
@@ -313,6 +314,10 @@ EOF
       #rustup component add rust-src
       #rustup component add rust-analyzer-preview
     ;; # }}} Rust
+
+    "zig") # Zig {{{
+      sudo snap install zig --classic --beta
+    ;; # }}} Zig
 
   esac
 done
