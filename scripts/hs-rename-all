@@ -9,6 +9,8 @@ rename() {
   local to="$2"
   local file="$3"
   nvim --headless \
+    +'lua vim.g.block_tags = true' \
+    +'lua vim.g.block_formatting = true' \
     +'set nofoldenable' \
     +'normal! zR' \
     +"%TSQ/^/((module)@_ (#eq? @_ \"$from.\"))/norm c${#from}l$to" \
@@ -25,7 +27,7 @@ main() {
 
   local from="$1"
   local to="$2"
-  git grep -l -E -e "as $from\$" -- '**.hs' | while read -r file; do
+  git grep -l -E -e "as $from(\$| )" -- '**.hs' | while read -r file; do
     rename "$from" "$to" "$file"
   done
 }
