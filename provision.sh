@@ -215,7 +215,6 @@ EOF
         && sudo apt install gh -y
 
       gh auth login
-      gh extension install github/gh-copilot
     ;; # }}} GitHub CLI
 
     "tmux-conf") # tmux-conf {{{
