@@ -1,4 +1,5 @@
 export PATH="$PATH":"$HOME"/.config/provision-conf/scripts
+export PATH="$PATH":/usr/local/go/bin
 
 ### MY_PS1 {{{
 

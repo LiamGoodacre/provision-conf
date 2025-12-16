@@ -158,6 +158,7 @@ tasks=(
   "ghcup"
   "ghostty"
   "github"
+  "go"
   "godot"
   "jujitsu"
   "neovim"
@@ -217,6 +218,18 @@ EOF
 
       gh auth login
     ;; # }}} GitHub CLI
+
+    "go") # Go {{{
+      (
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir" || exit 1
+        name=go1.25.5.linux-amd64.tar.gz
+        curl -LO https://go.dev/dl/"$name"
+        sudo rm -rf /usr/local/go
+        sudo tar -C /usr/local -xzf "$name"
+        rm "$name"
+      )
+    ;; # }}} Go
 
     "tmux-conf") # tmux-conf {{{
       ### Note: ensure bash >=5
