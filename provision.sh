@@ -94,6 +94,7 @@ sudo apt upgrade
 # Basic tools {{{
 sudo apt install \
   build-essential \
+  caddy \
   curl \
   fonts-hack-ttf \
   fzf \
