@@ -163,6 +163,7 @@ tasks=(
   "jujitsu"
   "neovim"
   "nvm-node"
+  "codex" # depends on npm
   "obs-studio"
   "rust"
   "tailscale"
@@ -247,6 +248,10 @@ EOF
         nvm use node
       )
     ;; # }}} NVM/Node
+
+    "codex") # Codex {{{
+      npm install -g @openai/codex
+    ;; # }}} Codex
 
     "neovim") # Neovim {{{
       (
