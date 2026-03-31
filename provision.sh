@@ -166,6 +166,7 @@ tasks=(
   "codex" # depends on npm
   "obs-studio"
   "rust"
+  "sooperlooper"
   "tailscale"
   "tmux-conf"
   "zig"
@@ -349,6 +350,10 @@ EOF
       #rustup component add rust-src
       #rustup component add rust-analyzer-preview
     ;; # }}} Rust
+
+    "sooperlooper") # SooperLooper {{{
+      sudo apt-get install -y sooperlooper
+    ;; # }}} SooperLooper
 
     "zig") # Zig {{{
       sudo snap install zig --classic --beta
