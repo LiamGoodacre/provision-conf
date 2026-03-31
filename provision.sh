@@ -352,7 +352,8 @@ EOF
     ;; # }}} Rust
 
     "sooperlooper") # SooperLooper {{{
-      sudo apt-get install -y sooperlooper
+      sudo apt-get install -y sooperlooper pipewire-jack jackd2
+      # systemctl --user restart pipewire pipewire-pulse wireplumber
     ;; # }}} SooperLooper
 
     "zig") # Zig {{{
