@@ -352,7 +352,8 @@ EOF
     ;; # }}} Rust
 
     "sooperlooper") # SooperLooper {{{
-      sudo apt-get install -y sooperlooper pipewire-jack jackd2
+      sudo apt-get install -y sooperlooper pipewire-jack jackd2 helvum
+      # sudo usermod -aG audio $USER # then reboot
       # systemctl --user restart pipewire pipewire-pulse wireplumber
     ;; # }}} SooperLooper
 
