@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+function main() {
+  git fetch -p
+  echo "Latest commit author of unmerged branches" >&2
+  for r in $( git branch -r --no-merged origin/master ); do
+    git show "$r" --format=$'{"author": "%an", "branch": "'"${r}"'"}' -q;
+  done
+}
+
+main "$@"

@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+function main() {
+  sudo service docker restart
+  if [[ "$(docker ps -q)" ]]; then
+    docker ps -q | xargs docker stop
+  fi
+  if [[ "$(docker ps -qa)" ]]; then
+    docker ps -qa | xargs docker rm -v
+  fi
+  docker system prune --all --volumes
+}
+
+main "$@"

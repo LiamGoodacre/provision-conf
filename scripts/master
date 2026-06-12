@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+git fetch -p
+if [[ "$(git branch --show-current)" == master ]]; then
+  git pull --rebase --autostash "${@}"
+else
+  git fetch origin master:master
+fi

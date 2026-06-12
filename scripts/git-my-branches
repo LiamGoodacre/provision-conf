@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+function main() {
+  git-unmerged-branch-authors 2>/dev/null \
+    | jq -r 'select(.author == "Liam Goodacre") | .branch'
+}
+
+main "$@"

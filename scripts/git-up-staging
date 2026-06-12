@@ -1,0 +1,20 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+function main() {
+  echo 'Fetching...' >&2
+  git fetch -p
+  echo 'Note: only looking at staging branches that are contained in origin/master.' >&2
+  git branch -r --merged origin/master \
+    | grep -E -e '\<origin/staging/' \
+    | grep -o 'staging/.*$' \
+    | while read -r b; do
+        echo "Pushing $b" >&2
+        git push origin origin/master:"$b"
+      done
+}
+
+main "$@"

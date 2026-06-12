@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+shopt -s expand_aliases
+
+function main() {
+  local branch="$1"
+  local onto="${2:-master}"
+  git switch "$branch"
+  git rebase "$onto" -i --autostash
+}
+
+main "$@"

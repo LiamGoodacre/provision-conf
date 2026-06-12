@@ -50,3 +50,5 @@ complete_with_brs() {
 }
 
 complete -F complete_with_brs v
+
+complete -F complete_with_brs git-up
