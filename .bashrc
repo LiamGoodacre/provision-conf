@@ -61,3 +61,7 @@ PS2="$(__ps2 color)"
 if which tailscale &>/dev/null; then
   eval "$(tailscale completion bash)"
 fi
+
+if which direnv &>/dev/null; then
+  eval "$(direnv hook bash)"
+fi

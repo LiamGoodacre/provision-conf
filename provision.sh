@@ -152,6 +152,7 @@ tasks=(
   "1password"
   "bazel"
   "configure-git"
+  "direnv"
   "docker"
   "dotnet"
   "fingerprint"
@@ -360,6 +361,10 @@ EOF
     "zig") # Zig {{{
       sudo snap install zig --classic --beta
     ;; # }}} Zig
+
+    "direnv") # direnv {{{
+      sudo apt install direnv
+    ;; # }}} direnv
 
   esac
 done
